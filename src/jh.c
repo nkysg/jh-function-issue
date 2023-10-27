@@ -13,15 +13,13 @@
    Last Modified: January 16, 2011
 */
 
+#include "jh.h"
 
-
+#include <stdint.h>
 #include <string.h>
 
-typedef unsigned long long uint64;
-
-typedef unsigned char BitSequence;
-typedef unsigned long long DataLength;
-typedef enum {SUCCESS = 0, FAIL = 1, BAD_HASHLEN = 2} HashReturn;
+/*typedef unsigned long long uint64;*/
+typedef uint64_t uint64;
 
 /*define data alignment for different C compilers*/
 #if defined(__GNUC__)
@@ -92,14 +90,14 @@ const unsigned char E8_bitslice_roundconstant[42][32]={
 {0x35,0xb4,0x98,0x31,0xdb,0x41,0x15,0x70,0xea,0x1e,0xf,0xbb,0xed,0xcd,0x54,0x9b,0x9a,0xd0,0x63,0xa1,0x51,0x97,0x40,0x72,0xf6,0x75,0x9d,0xbf,0x91,0x47,0x6f,0xe2}};
 
 
-void E8(hashState *state);  /*The bijective function E8, in bitslice form*/
-void F8(hashState *state);  /*The compression function F8 */
+static void E8(hashState *state);  /*The bijective function E8, in bitslice form*/
+static void F8(hashState *state);  /*The compression function F8 */
 
 /*The API functions*/
-HashReturn Init(hashState *state, int hashbitlen);
-HashReturn Update(hashState *state, const BitSequence *data, DataLength databitlen);
-HashReturn Final(hashState *state, BitSequence *hashval);
-HashReturn Hash(int hashbitlen, const BitSequence *data,DataLength databitlen, BitSequence *hashval);
+static HashReturn Init(hashState *state, int hashbitlen);
+static HashReturn Update(hashState *state, const BitSequence *data, DataLength databitlen);
+static HashReturn Final(hashState *state, BitSequence *hashval);
+HashReturn jh_hash(int hashbitlen, const BitSequence *data,DataLength databitlen, BitSequence *hashval);
 
 /*swapping bit 2i with bit 2i+1 of 64-bit x*/
 #define SWAP1(x)   (x) = ((((x) & 0x5555555555555555ULL) << 1) | (((x) & 0xaaaaaaaaaaaaaaaaULL) >> 1));
@@ -152,7 +150,7 @@ HashReturn Hash(int hashbitlen, const BitSequence *data,DataLength databitlen, B
       m6 ^= temp1;
 
 /*The bijective function E8, in bitslice form*/
-void E8(hashState *state)
+static void E8(hashState *state)
 {
       uint64 i,roundnumber,temp0,temp1;
 
@@ -213,7 +211,7 @@ void E8(hashState *state)
 }
 
 /*The compression function F8 */
-void F8(hashState *state)
+static void F8(hashState *state)
 {
       uint64  i;
 
@@ -228,7 +226,7 @@ void F8(hashState *state)
 }
 
 /*before hashing a message, initialize the hash state as H0 */
-HashReturn Init(hashState *state, int hashbitlen)
+static HashReturn Init(hashState *state, int hashbitlen)
 {
 	  state->databitlen = 0;
 	  state->datasize_in_buffer = 0;
@@ -250,7 +248,7 @@ HashReturn Init(hashState *state, int hashbitlen)
 
 
 /*hash each 512-bit message block, except the last partial block*/
-HashReturn Update(hashState *state, const BitSequence *data, DataLength databitlen)
+static HashReturn Update(hashState *state, const BitSequence *data, DataLength databitlen)
 {
       DataLength index; /*the starting address of the data to be compressed*/
 
@@ -298,7 +296,7 @@ HashReturn Update(hashState *state, const BitSequence *data, DataLength databitl
 }
 
 /*pad the message, process the padded block(s), truncate the hash value H to obtain the message digest*/
-HashReturn Final(hashState *state, BitSequence *hashval)
+static HashReturn Final(hashState *state, BitSequence *hashval)
 {
       unsigned int i;
 
@@ -354,7 +352,7 @@ HashReturn Final(hashState *state, BitSequence *hashval)
    three inputs: message digest size in bits (hashbitlen); message (data); message length in bits (databitlen)
    one output:   message digest (hashval)
 */
-HashReturn Hash(int hashbitlen, const BitSequence *data,DataLength databitlen, BitSequence *hashval)
+HashReturn jh_hash(int hashbitlen, const BitSequence *data,DataLength databitlen, BitSequence *hashval)
 {
       hashState state;
 

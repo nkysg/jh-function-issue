@@ -1,14 +1,5 @@
 #include <stdio.h>
-//#include "jh_ref.h"
-//#include "jh_bitslice_ref32.h"
-//#include "jh_bitslice_ref64.h"
-// bug O2 and O3
-#include "jh_ansi_opt64.h"
-// bug
-//#include "jh_ansi_opt32.h"
-//#include "jh_opt8.h"
-//#include "jh_sse2_opt32.h"
-//#include "jh_sse2_opt64.h"
+#include "jh.h"
 int main() {
         unsigned char input[] = "\xd6\xa1\x1a\x43\x1f\xd5\x6d\xc2\x9c\x59\x27\x32\x8e\x83\xee\xf1\x15\x90\x36\x2b"
                        "\x70\xae\xf4\x92\xf1\x2c\x44\x9b\xde\x65\x7b\x4e\x3a\xc4\xe1\x58\x16\x31\x46\x13"
@@ -22,7 +13,7 @@ int main() {
                        "\x03\x5a\xe5\xb0\x6b\x49\xf1\x23\x64\xfc\xb5\x77\x6d\xb3\x69\x2b\xfb\x6f\x02\x9d";
 
         unsigned char output[32] = {'\0'};
-        Hash(32 * 8, input, sizeof(input) * 8, output);
+        jh_hash(32 * 8, input, sizeof(input) * 8, output);
 
 	//output should be 0xea252e4fe0d223d17925f61058e2809da4896f12db26fce35faa5534575b8ce0
         printf("0x");
